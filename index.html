@@ -3,178 +3,261 @@
 
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>ProGlove Raw Input Tester</title>
+<title>ProGlove GS / GS1 Raw Input Tester</title>
 
 <style>
 body {
-    margin:0;
-    background:#020617;
-    color:#e2e8f0;
-    font:16px monospace;
+    margin: 0;
+    background: #020617;
+    color: #e2e8f0;
+    font: 16px monospace;
 }
 
 .w {
-    max-width:950px;
-    margin:auto;
-    padding:22px;
+    max-width: 1000px;
+    margin: auto;
+    padding: 22px;
 }
 
 h1 {
-    font-size:28px;
+    font-size: 28px;
+    margin-bottom: 8px;
 }
 
-input,.box,button {
-    box-sizing:border-box;
-    width:100%;
-    border-radius:14px;
+.subtitle {
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+input, .box, button {
+    box-sizing: border-box;
+    width: 100%;
+    border-radius: 14px;
 }
 
 .scan {
-    padding:16px;
-    background:#0f172a;
-    color:#fff;
-    border:2px solid #06b6d4;
-    outline:0;
-    font-size:18px;
+    padding: 18px;
+    background: #0f172a;
+    color: #fff;
+    border: 2px solid #06b6d4;
+    outline: 0;
+    font-size: 20px;
+}
+
+.scan:focus {
+    border-color: #22d3ee;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
 }
 
 .box {
-    margin-top:16px;
-    padding:18px;
-    background:#0f172a;
-    min-height:55px;
-    word-break:break-all;
+    margin-top: 16px;
+    padding: 18px;
+    background: #0f172a;
+    min-height: 55px;
+    word-break: break-all;
 }
 
-.t {
-    color:#22d3ee;
-    font-weight:bold;
-    margin-bottom:9px;
+.title {
+    color: #22d3ee;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-.events {
-    white-space:pre-wrap;
-    font-size:13px;
+.title-yellow {
+    color: #fbbf24;
 }
 
-.amber {
-    color:#fbbf24;
+.output {
+    white-space: pre-wrap;
+    line-height: 1.6;
 }
 
-.gs-output {
-    white-space:pre-wrap;
-    line-height:1.6;
+.small {
+    font-size: 13px;
 }
 
-.gs-found {
-    color:#4ade80;
+.info {
+    color: #94a3b8;
 }
 
-.gs-not-found {
-    color:#f87171;
+.good {
+    color: #4ade80;
+}
+
+.bad {
+    color: #f87171;
+}
+
+.warning {
+    color: #fbbf24;
+}
+
+.special {
+    color: #f472b6;
+    font-weight: bold;
 }
 
 button {
-    margin-top:16px;
-    width:auto;
-    padding:12px 22px;
-    border:0;
-    background:#dc2626;
-    color:white;
-    font-weight:bold;
+    margin-top: 18px;
+    width: auto;
+    padding: 13px 24px;
+    border: 0;
+    cursor: pointer;
+    background: #dc2626;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
 }
 
 .note {
-    color:#94a3b8;
-    font-size:12px;
-    margin-top:18px;
-    line-height:1.5;
+    margin-top: 22px;
+    padding: 16px;
+    background: #111827;
+    border-radius: 12px;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.6;
 }
 </style>
-
 </head>
+
 
 <body>
 
 <div class="w">
 
-<h1>ProGlove Raw Input Tester</h1>
+<h1>ProGlove GS / GS1 Raw Input Tester</h1>
 
-<p>
-Napauta SCAN INPUT -kenttää ja lue viivakoodi ProGlovella.
-</p>
+<div class="subtitle">
+Testaa tarkalleen mitä ProGlove-lukija välittää Androidille / selaimelle.
+</div>
 
 <input
     id="scan"
     class="scan"
-    placeholder="SCAN INPUT - napauta tähän"
+    placeholder="SCAN INPUT - napauta tähän ja lue viivakoodi"
     autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
 >
 
-<div class="box">
-    <div class="t">Raw input:</div>
-    <div id="raw">-</div>
-</div>
+
+<!-- RAW -->
 
 <div class="box">
-    <div class="t">Readable:</div>
-    <div id="readable">-</div>
+    <div class="title">Raw input:</div>
+    <div id="raw" class="output">-</div>
 </div>
 
-<div class="box">
-    <div class="t">HEX:</div>
-    <div id="hex">-</div>
-</div>
+
+<!-- READABLE -->
 
 <div class="box">
-    <div class="t">Character codes:</div>
-    <div id="codes" class="events">-</div>
+    <div class="title">Readable:</div>
+    <div id="readable" class="output">-</div>
 </div>
+
+
+<!-- HEX -->
+
+<div class="box">
+    <div class="title">HEX:</div>
+    <div id="hex" class="output">-</div>
+</div>
+
+
+<!-- CHARACTER CODES -->
+
+<div class="box">
+    <div class="title">Character codes:</div>
+    <div id="codes" class="output small">-</div>
+</div>
+
 
 <!-- GS ANALYSIS -->
 
 <div class="box">
-    <div class="t amber">
-        GS / FNC1 Analysis:
+
+    <div class="title title-yellow">
+        GS / FNC1 Analysis
     </div>
 
-    <div id="gs" class="gs-output">-</div>
+    <div class="info output">
+Looking for:
+GS = Group Separator
+ASCII decimal = 29
+HEX = 0x1D
+    </div>
+
+    <hr style="border:0;border-top:1px solid #334155;margin:16px 0;">
+
+    <div id="gs" class="output">-</div>
+
 </div>
+
+
+<!-- GS1 ANALYSIS -->
+
+<div class="box">
+
+    <div class="title title-yellow">
+        GS1 Analysis
+    </div>
+
+    <div id="gs1" class="output">-</div>
+
+</div>
+
 
 <!-- CONTROL CHARACTERS -->
 
 <div class="box">
-    <div class="t amber">
-        Control characters:
+
+    <div class="title title-yellow">
+        Control characters
     </div>
 
-    <div id="controls" class="events">-</div>
+    <div id="controls" class="output small">-</div>
+
 </div>
+
 
 <!-- KEYBOARD EVENTS -->
 
 <div class="box">
-    <div class="t amber">
-        Keyboard events:
+
+    <div class="title title-yellow">
+        Keyboard events
     </div>
 
-    <div id="events" class="events">-</div>
+    <div id="events" class="output small">-</div>
+
 </div>
+
 
 <button id="clear">
 CLEAR
 </button>
 
+
 <div class="note">
 
-GS = Group Separator<br>
-ASCII decimal = 29<br>
-HEX = 0x1D<br><br>
+<b>GS / Group Separator</b><br>
+ASCII decimal: 29<br>
+HEX: 0x1D<br><br>
 
-Jos selain vastaanottaa merkin 0x1D,
-se näytetään muodossa &lt;GS 0x1D&gt;.
+Jos selain vastaanottaa aidon GS-merkin,
+se näytetään muodossa:<br><br>
+
+&lt;GS 0x1D&gt;<br><br>
+
+HUOM: GS-merkin löytyminen ei yksin todista,
+että fyysinen viivakoodi oli GS1-128.
+Keyboard input ei välttämättä kerro alkuperäistä
+viivakoodisymbologiaa.
 
 </div>
 
@@ -184,70 +267,67 @@ se näytetään muodossa &lt;GS 0x1D&gt;.
 <script>
 
 /*
- * ELEMENTS
- */
+==================================================
+ELEMENTS
+==================================================
+*/
 
-const scan =
-    document.getElementById("scan");
-
-const raw =
-    document.getElementById("raw");
-
-const readable =
-    document.getElementById("readable");
-
-const hex =
-    document.getElementById("hex");
-
-const codes =
-    document.getElementById("codes");
-
-const gs =
-    document.getElementById("gs");
-
-const controls =
-    document.getElementById("controls");
-
-const events =
-    document.getElementById("events");
+const scan = document.getElementById("scan");
+const raw = document.getElementById("raw");
+const readable = document.getElementById("readable");
+const hex = document.getElementById("hex");
+const codes = document.getElementById("codes");
+const gs = document.getElementById("gs");
+const gs1 = document.getElementById("gs1");
+const controls = document.getElementById("controls");
+const events = document.getElementById("events");
 
 let logs = [];
 
 
 /*
- * CONTROL CHARACTER NAME
- */
+==================================================
+VISIBLE CHARACTER
+==================================================
+*/
 
 function visibleChar(code) {
 
-    if (code === 29)
+    if (code === 29) {
         return "<GS 0x1D>";
+    }
 
-    if (code === 28)
+    if (code === 28) {
         return "<FS 0x1C>";
+    }
 
-    if (code === 30)
+    if (code === 30) {
         return "<RS 0x1E>";
+    }
 
-    if (code === 31)
+    if (code === 31) {
         return "<US 0x1F>";
+    }
 
-    if (code === 13)
+    if (code === 13) {
         return "<CR 0x0D>";
+    }
 
-    if (code === 10)
+    if (code === 10) {
         return "<LF 0x0A>";
+    }
 
-    if (code === 9)
+    if (code === 9) {
         return "<TAB 0x09>";
+    }
 
-    if (code < 32) {
+    if (code < 32 || code === 127) {
+
         return "<CTRL 0x" +
-            code
-            .toString(16)
-            .toUpperCase()
-            .padStart(2,"0")
-            + ">";
+            code.toString(16)
+                .toUpperCase()
+                .padStart(2, "0") +
+            ">";
     }
 
     return String.fromCodePoint(code);
@@ -255,107 +335,125 @@ function visibleChar(code) {
 
 
 /*
- * MAIN ANALYZER
- */
+==================================================
+HEX
+==================================================
+*/
+
+function toHex(code) {
+
+    return code
+        .toString(16)
+        .toUpperCase()
+        .padStart(2, "0");
+}
+
+
+/*
+==================================================
+MAIN ANALYZER
+==================================================
+*/
 
 function analyze() {
 
-    const value =
-        scan.value;
-
-    const arr =
-        Array.from(value);
+    const value = scan.value;
+    const arr = Array.from(value);
 
 
     /*
-     * RAW INPUT
-     */
+    ------------------------------------------------
+    RAW INPUT
+    ------------------------------------------------
+    */
 
     raw.textContent =
         value.length
-        ? value
-        : "-";
+            ? value
+            : "-";
 
 
     /*
-     * READABLE
-     */
+    ------------------------------------------------
+    READABLE
+    ------------------------------------------------
+    */
 
     readable.textContent =
-
         value.length
 
-        ? arr.map(c =>
-            visibleChar(
-                c.codePointAt(0)
-            )
-          ).join("")
+            ? arr.map(c =>
+                visibleChar(
+                    c.codePointAt(0)
+                )
+              ).join("")
 
-        : "-";
+            : "-";
 
 
     /*
-     * HEX
-     */
+    ------------------------------------------------
+    HEX
+    ------------------------------------------------
+    */
 
     hex.textContent =
-
         value.length
 
-        ? arr.map(c =>
-            c.codePointAt(0)
-            .toString(16)
-            .toUpperCase()
-            .padStart(2,"0")
-          ).join(" ")
+            ? arr.map(c =>
+                toHex(
+                    c.codePointAt(0)
+                )
+              ).join(" ")
 
-        : "-";
+            : "-";
 
 
     /*
-     * CHARACTER CODES
-     *
-     * CORRECTED:
-     * return value must start on the same line
-     */
+    ------------------------------------------------
+    CHARACTER CODES
+    ------------------------------------------------
+    */
 
     codes.textContent =
-
         value.length
 
-        ? arr.map((c,index) => {
+            ? arr.map((c, index) => {
 
-            const n =
-                c.codePointAt(0);
+                const n =
+                    c.codePointAt(0);
 
-            return "#" + (index + 1) +
-                " | " +
-                visibleChar(n) +
-                " | DEC " +
-                n +
-                " | HEX 0x" +
-                n
-                .toString(16)
-                .toUpperCase()
-                .padStart(2,"0");
+                return "#" +
+                    (index + 1) +
 
-          }).join("\n")
+                    " | " +
+                    visibleChar(n) +
 
-        : "-";
+                    " | DEC " +
+                    n +
+
+                    " | HEX 0x" +
+                    toHex(n);
+
+              }).join("\n")
+
+            : "-";
 
 
     /*
-     * CONTROL CHARACTERS
-     */
+    ------------------------------------------------
+    CONTROL CHARACTERS
+    ------------------------------------------------
+    */
 
     const controlCharacters = [];
 
-    arr.forEach((c,index) => {
+    arr.forEach((c, index) => {
 
         const n =
             c.codePointAt(0);
 
-        if (n < 32) {
+        if (n < 32 || n === 127) {
 
             controlCharacters.push(
 
@@ -366,19 +464,13 @@ function analyze() {
                 index +
 
                 ": " +
-
                 visibleChar(n) +
 
                 " | DEC " +
                 n +
 
                 " | HEX 0x" +
-
-                n
-                .toString(16)
-                .toUpperCase()
-                .padStart(2,"0")
-
+                toHex(n)
             );
         }
     });
@@ -388,18 +480,20 @@ function analyze() {
 
         controlCharacters.length
 
-        ? controlCharacters.join("\n")
+            ? controlCharacters.join("\n")
 
-        : "No control characters detected.";
+            : "No control characters detected.";
 
 
     /*
-     * GS / FNC1 ANALYSIS
-     */
+    ------------------------------------------------
+    GS SEARCH
+    ------------------------------------------------
+    */
 
     const gsPositions = [];
 
-    arr.forEach((c,index) => {
+    arr.forEach((c, index) => {
 
         if (
             c.codePointAt(0) === 29
@@ -409,22 +503,22 @@ function analyze() {
     });
 
 
-    if (
-        gsPositions.length > 0
-    ) {
+    /*
+    ------------------------------------------------
+    GS RESULT
+    ------------------------------------------------
+    */
+
+    if (gsPositions.length > 0) {
 
         const gsAtStart =
-
             arr.length > 0 &&
-            arr[0]
-            .codePointAt(0) === 29;
+            arr[0].codePointAt(0) === 29;
 
 
         const gsAtEnd =
-
             arr.length > 0 &&
-            arr[arr.length - 1]
-            .codePointAt(0) === 29;
+            arr[arr.length - 1].codePointAt(0) === 29;
 
 
         let result = "";
@@ -448,22 +542,18 @@ function analyze() {
             "\n";
 
 
-        /*
-         * POSITIONS
-         */
-
         result +=
             "\nGS POSITIONS:\n";
 
+
         gsPositions.forEach(
-            (position,index) => {
+            (position, index) => {
 
                 result +=
-
                     "#" +
                     (index + 1) +
 
-                    ": index " +
+                    " = index " +
                     position +
 
                     " / character " +
@@ -475,19 +565,25 @@ function analyze() {
 
 
         /*
-         * EACH GS SEPARATOR
-         */
+        GS SEPARATORS
+        */
 
         result +=
             "\nGS SEPARATORS:\n";
 
+
         gsPositions.forEach(
-            (position,index) => {
+            (position, index) => {
 
                 const before =
 
                     arr
-                    .slice(0,position)
+                    .slice(0, position)
+                    .map(c =>
+                        visibleChar(
+                            c.codePointAt(0)
+                        )
+                    )
                     .join("");
 
 
@@ -495,6 +591,11 @@ function analyze() {
 
                     arr
                     .slice(position + 1)
+                    .map(c =>
+                        visibleChar(
+                            c.codePointAt(0)
+                        )
+                    )
                     .join("");
 
 
@@ -503,7 +604,6 @@ function analyze() {
                     (index + 1) +
                     "\n";
 
-
                 result +=
                     "Before: " +
                     (
@@ -511,7 +611,6 @@ function analyze() {
                         "<START OF DATA>"
                     ) +
                     "\n";
-
 
                 result +=
                     "After: " +
@@ -525,8 +624,8 @@ function analyze() {
 
 
         /*
-         * FULL READABLE DATA
-         */
+        FULL DATA
+        */
 
         result +=
             "\nFULL DATA:\n";
@@ -541,8 +640,8 @@ function analyze() {
 
 
         /*
-         * HEX WITH GS
-         */
+        FULL HEX
+        */
 
         result +=
             "\n\nFULL HEX:\n";
@@ -550,26 +649,20 @@ function analyze() {
         result +=
 
             arr.map(c =>
-                c.codePointAt(0)
-                .toString(16)
-                .toUpperCase()
-                .padStart(2,"0")
+                toHex(
+                    c.codePointAt(0)
+                )
             ).join(" ");
 
 
-        gs.textContent =
-            result;
+        gs.textContent = result;
 
-        gs.classList.remove(
-            "gs-not-found"
-        );
+        gs.className =
+            "output good";
 
-        gs.classList.add(
-            "gs-found"
-        );
+    }
 
-
-    } else {
+    else {
 
         gs.textContent =
 
@@ -581,23 +674,212 @@ function analyze() {
 
             "GS COUNT: 0\n\n" +
 
-            "No ASCII 29 / HEX 0x1D character detected.";
+            "ASCII 29 / HEX 0x1D was not detected.";
 
-
-        gs.classList.remove(
-            "gs-found"
-        );
-
-        gs.classList.add(
-            "gs-not-found"
-        );
+        gs.className =
+            "output bad";
     }
+
+
+    /*
+    ------------------------------------------------
+    GS1 ANALYSIS
+    ------------------------------------------------
+
+    IMPORTANT:
+
+    This does NOT claim that the physical barcode
+    itself was GS1-128.
+
+    Keyboard wedge data generally does not contain
+    enough information to prove symbology.
+
+    We can only analyze the received data.
+    ------------------------------------------------
+    */
+
+    let gs1Result = "";
+
+
+    if (!value.length) {
+
+        gs1.textContent = "-";
+        gs1.className = "output";
+
+        return;
+    }
+
+
+    /*
+    Check whether ASCII 29 separators exist
+    */
+
+    const hasGS =
+        gsPositions.length > 0;
+
+
+    /*
+    Numeric AI-like prefix check.
+
+    Common GS1 AIs include for example:
+    00 = SSCC
+    01 = GTIN
+    10 = Batch/Lot
+    11 = Production date
+    15 = Best before
+    17 = Expiration date
+    21 = Serial number
+    30 = Variable count
+    37 = Count
+
+    This check is intentionally conservative.
+    */
+
+    const commonAIs = [
+        "00",
+        "01",
+        "10",
+        "11",
+        "13",
+        "15",
+        "17",
+        "20",
+        "21",
+        "22",
+        "30",
+        "37",
+        "90",
+        "91",
+        "92",
+        "93",
+        "94",
+        "95",
+        "96",
+        "97",
+        "98",
+        "99"
+    ];
+
+
+    const firstTwo =
+        value.substring(0, 2);
+
+
+    const startsWithKnownAI =
+        commonAIs.includes(firstTwo);
+
+
+    gs1Result +=
+        "GS separator (ASCII 29) detected: " +
+        (hasGS ? "YES" : "NO") +
+        "\n";
+
+
+    gs1Result +=
+        "Starts with recognized GS1 AI candidate: " +
+        (startsWithKnownAI ? "YES" : "NO") +
+        "\n";
+
+
+    if (startsWithKnownAI) {
+
+        gs1Result +=
+            "First AI candidate: (" +
+            firstTwo +
+            ")\n";
+    }
+
+
+    /*
+    Overall interpretation
+    */
+
+    gs1Result +=
+        "\nINTERPRETATION:\n";
+
+
+    if (
+        hasGS &&
+        startsWithKnownAI
+    ) {
+
+        gs1Result +=
+            "Data contains GS1-like elements.\n";
+
+        gs1Result +=
+            "A GS separator was received and the data starts with a known GS1 AI candidate.\n";
+
+    }
+
+    else if (hasGS) {
+
+        gs1Result +=
+            "A real GS / ASCII 29 separator was received.\n";
+
+        gs1Result +=
+            "However, this alone does not prove that the complete data is valid GS1 data.\n";
+
+    }
+
+    else if (startsWithKnownAI) {
+
+        gs1Result +=
+            "The data starts with a possible GS1 Application Identifier.\n";
+
+        gs1Result +=
+            "No ASCII 29 separator was detected.\n";
+
+    }
+
+    else {
+
+        gs1Result +=
+            "No clear GS1 structure was identified from this simple check.\n";
+    }
+
+
+    /*
+    Symbology conclusion
+    */
+
+    gs1Result +=
+        "\nGS1-128 SYMBOLOGY:\n";
+
+    gs1Result +=
+        "Cannot be confirmed from keyboard input alone.\n";
+
+    gs1Result +=
+        "The scanner would need to provide symbology / barcode type information separately.";
+
+
+    gs1.textContent =
+        gs1Result;
+
+
+    if (
+        hasGS &&
+        startsWithKnownAI
+    ) {
+
+        gs1.className =
+            "output good";
+
+    }
+
+    else {
+
+        gs1.className =
+            "output warning";
+    }
+
 }
 
 
 /*
- * INPUT EVENT
- */
+==================================================
+INPUT EVENT
+==================================================
+*/
 
 scan.addEventListener(
     "input",
@@ -605,22 +887,25 @@ scan.addEventListener(
 
         logs.push(
 
-            "INPUT | value=" +
+            "INPUT" +
 
+            " | value=" +
             JSON.stringify(
                 scan.value
             ) +
 
             " | inputType=" +
             e.inputType
-
         );
 
+
         logs =
-            logs.slice(-100);
+            logs.slice(-150);
+
 
         events.textContent =
             logs.join("\n");
+
 
         analyze();
     }
@@ -628,8 +913,44 @@ scan.addEventListener(
 
 
 /*
- * KEYDOWN
- */
+==================================================
+BEFOREINPUT EVENT
+==================================================
+*/
+
+scan.addEventListener(
+    "beforeinput",
+    function(e) {
+
+        logs.push(
+
+            "BEFOREINPUT" +
+
+            " | data=" +
+            JSON.stringify(
+                e.data
+            ) +
+
+            " | inputType=" +
+            e.inputType
+        );
+
+
+        logs =
+            logs.slice(-150);
+
+
+        events.textContent =
+            logs.join("\n");
+    }
+);
+
+
+/*
+==================================================
+KEYDOWN
+==================================================
+*/
 
 scan.addEventListener(
     "keydown",
@@ -637,8 +958,9 @@ scan.addEventListener(
 
         logs.push(
 
-            "KEYDOWN | key=" +
+            "KEYDOWN" +
 
+            " | key=" +
             JSON.stringify(
                 e.key
             ) +
@@ -651,11 +973,12 @@ scan.addEventListener(
 
             " | which=" +
             e.which
-
         );
 
+
         logs =
-            logs.slice(-100);
+            logs.slice(-150);
+
 
         events.textContent =
             logs.join("\n");
@@ -664,8 +987,10 @@ scan.addEventListener(
 
 
 /*
- * KEYUP
- */
+==================================================
+KEYUP
+==================================================
+*/
 
 scan.addEventListener(
     "keyup",
@@ -673,8 +998,9 @@ scan.addEventListener(
 
         logs.push(
 
-            "KEYUP | key=" +
+            "KEYUP" +
 
+            " | key=" +
             JSON.stringify(
                 e.key
             ) +
@@ -684,11 +1010,12 @@ scan.addEventListener(
 
             " | keyCode=" +
             e.keyCode
-
         );
 
+
         logs =
-            logs.slice(-100);
+            logs.slice(-150);
+
 
         events.textContent =
             logs.join("\n");
@@ -697,51 +1024,46 @@ scan.addEventListener(
 
 
 /*
- * CLEAR BUTTON
- */
+==================================================
+CLEAR
+==================================================
+*/
 
 document
 .getElementById("clear")
-.onclick = function() {
+.addEventListener(
+    "click",
+    function() {
 
-    scan.value = "";
+        scan.value = "";
 
-    logs = [];
+        logs = [];
 
-    raw.textContent =
-        "-";
+        raw.textContent = "-";
+        readable.textContent = "-";
+        hex.textContent = "-";
+        codes.textContent = "-";
+        gs.textContent = "-";
+        gs1.textContent = "-";
+        controls.textContent = "-";
+        events.textContent = "-";
 
-    readable.textContent =
-        "-";
+        gs.className =
+            "output";
 
-    hex.textContent =
-        "-";
+        gs1.className =
+            "output";
 
-    codes.textContent =
-        "-";
-
-    gs.textContent =
-        "-";
-
-    controls.textContent =
-        "-";
-
-    events.textContent =
-        "-";
-
-
-    gs.classList.remove(
-        "gs-found",
-        "gs-not-found"
-    );
-
-    scan.focus();
-};
+        scan.focus();
+    }
+);
 
 
 /*
- * AUTO FOCUS
- */
+==================================================
+AUTO FOCUS
+==================================================
+*/
 
 scan.focus();
 
