@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fi">
+
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,6 +8,7 @@
 <title>ProGlove Raw Input Tester</title>
 
 <style>
+
 body {
     margin:0;
     background:#020617;
@@ -62,6 +64,21 @@ input,.box,button {
     color:#fbbf24;
 }
 
+.gs-output {
+    white-space:pre-wrap;
+    line-height:1.6;
+}
+
+.gs-found {
+    color:#4ade80;
+    font-weight:bold;
+}
+
+.gs-not-found {
+    color:#f87171;
+    font-weight:bold;
+}
+
 button {
     margin-top:16px;
     width:auto;
@@ -77,6 +94,7 @@ button {
     font-size:12px;
     margin-top:18px;
 }
+
 </style>
 </head>
 
@@ -114,7 +132,12 @@ Napauta SCAN INPUT -kenttää ja lue viivakoodi ProGlovella.
 
 <div class="box">
     <div class="t">Character codes:</div>
-    <div id="codes">-</div>
+    <div id="codes" class="events">-</div>
+</div>
+
+<div class="box">
+    <div class="t amber">GS / FNC1 Detection:</div>
+    <div id="gs" class="gs-output">-</div>
 </div>
 
 <div class="box">
@@ -125,7 +148,7 @@ Napauta SCAN INPUT -kenttää ja lue viivakoodi ProGlovella.
 <button id="clear">CLEAR</button>
 
 <div class="note">
-GS / FNC1 näkyy muodossa &lt;GS 0x1D&gt;, jos selain todella vastaanottaa merkin 0x1D.
+GS / FNC1 näkyy muodossa &lt;GS 0x1D&gt;, jos selain todella vastaanottaa ASCII 29 / HEX 0x1D -merkin.
 </div>
 
 </div>
@@ -137,6 +160,7 @@ const raw = document.getElementById("raw");
 const readable = document.getElementById("readable");
 const hex = document.getElementById("hex");
 const codes = document.getElementById("codes");
+const gs = document.getElementById("gs");
 const events = document.getElementById("events");
 
 let logs = [];
@@ -160,19 +184,35 @@ function visibleChar(code) {
     return String.fromCodePoint(code);
 }
 
+
 function analyze() {
 
     const value = scan.value;
-
     const arr = Array.from(value);
+
+    /*
+     * RAW INPUT
+     */
 
     raw.textContent =
         value.length ? value : "-";
 
+
+    /*
+     * READABLE
+     */
+
     readable.textContent =
         value.length
-        ? arr.map(c => visibleChar(c.codePointAt(0))).join("")
+        ? arr.map(c =>
+            visibleChar(c.codePointAt(0))
+          ).join("")
         : "-";
+
+
+    /*
+     * HEX
+     */
 
     hex.textContent =
         value.length
@@ -184,9 +224,15 @@ function analyze() {
           ).join(" ")
         : "-";
 
+
+    /*
+     * CHARACTER CODES
+     */
+
     codes.textContent =
         value.length
         ? arr.map(c => {
+
             const n = c.codePointAt(0);
 
             return visibleChar(n) +
@@ -195,9 +241,85 @@ function analyze() {
                    n.toString(16)
                     .toUpperCase()
                     .padStart(2,"0");
+
           }).join("\n")
         : "-";
+
+
+    /*
+     * GS / FNC1 DETECTION
+     */
+
+    const gsPositions = [];
+
+    arr.forEach((c, index) => {
+
+        if (c.codePointAt(0) === 29) {
+            gsPositions.push(index);
+        }
+
+    });
+
+
+    if (gsPositions.length > 0) {
+
+        let result =
+            "GS FOUND: YES\n" +
+            "Count: " + gsPositions.length + "\n" +
+            "Position(s): " + gsPositions.join(", ");
+
+
+        /*
+         * Jos vain yksi GS löytyy,
+         * näytetään myös mitä oli
+         * ennen ja jälkeen GS-merkin.
+         */
+
+        if (gsPositions.length === 1) {
+
+            const pos = gsPositions[0];
+
+            result +=
+                "\n\nBefore GS:\n" +
+                arr.slice(0, pos).join("") +
+
+                "\n\nAfter GS:\n" +
+                arr.slice(pos + 1).join("");
+        }
+
+
+        /*
+         * Näytetään lisäksi koko
+         * data GS näkyväksi muutettuna.
+         */
+
+        result +=
+            "\n\nDetected data:\n" +
+            arr.map(c =>
+                visibleChar(c.codePointAt(0))
+            ).join("");
+
+
+        gs.textContent = result;
+
+        gs.classList.remove("gs-not-found");
+        gs.classList.add("gs-found");
+
+    } else {
+
+        gs.textContent =
+            "GS FOUND: NO\n" +
+            "No ASCII 29 / HEX 0x1D character detected.";
+
+        gs.classList.remove("gs-found");
+        gs.classList.add("gs-not-found");
+    }
 }
+
+
+/*
+ * INPUT EVENT
+ */
 
 scan.addEventListener("input", function(e) {
 
@@ -210,10 +332,16 @@ scan.addEventListener("input", function(e) {
 
     logs = logs.slice(-100);
 
-    events.textContent = logs.join("\n");
+    events.textContent =
+        logs.join("\n");
 
     analyze();
 });
+
+
+/*
+ * KEYDOWN EVENT
+ */
 
 scan.addEventListener("keydown", function(e) {
 
@@ -230,8 +358,14 @@ scan.addEventListener("keydown", function(e) {
 
     logs = logs.slice(-100);
 
-    events.textContent = logs.join("\n");
+    events.textContent =
+        logs.join("\n");
 });
+
+
+/*
+ * KEYUP EVENT
+ */
 
 scan.addEventListener("keyup", function(e) {
 
@@ -246,22 +380,40 @@ scan.addEventListener("keyup", function(e) {
 
     logs = logs.slice(-100);
 
-    events.textContent = logs.join("\n");
+    events.textContent =
+        logs.join("\n");
 });
+
+
+/*
+ * CLEAR
+ */
 
 document.getElementById("clear").onclick = function() {
 
     scan.value = "";
+
     logs = [];
 
     raw.textContent = "-";
     readable.textContent = "-";
     hex.textContent = "-";
     codes.textContent = "-";
+    gs.textContent = "-";
     events.textContent = "-";
+
+    gs.classList.remove(
+        "gs-found",
+        "gs-not-found"
+    );
 
     scan.focus();
 };
+
+
+/*
+ * Focus automatically when page opens
+ */
 
 scan.focus();
 
