@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ProGlove Raw Input Tester</title>
+<style>body{margin:0;background:#020617;color:#e2e8f0;font:16px monospace}.w{max-width:950px;margin:auto;padding:22px}h1{font-size:28px}input,.box,button{box-sizing:border-box;width:100%;border-radius:14px}.scan{padding:16px;background:#0f172a;color:#fff;border:2px solid #06b6d4;outline:0}.box{margin-top:16px;padding:18px;background:#0f172a;min-height:55px;word-break:break-all}.t{color:#22d3ee;font-weight:bold;margin-bottom:9px}.events{white-space:pre-wrap;font-size:13px}.amber{color:#fbbf24}button{margin-top:16px;width:auto;padding:12px 22px;border:0;background:#dc2626;color:white;font-weight:bold}.note{color:#94a3b8;font-size:12px;margin-top:18px}</style>
+</head><body><div class="w">
+<h1>ProGlove Raw Input Tester</h1><p>Yhdistä ProGlove Androidiin, napauta SCAN INPUT ja lue viivakoodi.</p>
+<input id="scan" class="scan" inputmode="none" placeholder="SCAN INPUT - napauta tähän ennen skannausta" autocomplete="off">
+<div class="box"><div class="t">Readable:</div><div id="readable">-</div></div>
+<div class="box"><div class="t">Actual received:</div><div id="actual">-</div></div>
+<div class="box"><div class="t">HEX:</div><div id="hex">-</div></div>
+<div class="box"><div class="t amber">Keyboard events:</div><div id="events" class="events">-</div></div>
+<button id="clear">CLEAR</button>
+<div class="note">Näyttää selaimelle asti tulleen syötteen. &lt;GS&gt; / &lt;FNC1&gt; näytetään vain, jos selain vastaanottaa merkin 0x1D.</div>
+</div><script>
+const scan=document.getElementById('scan'),r=document.getElementById('readable'),a=document.getElementById('actual'),h=document.getElementById('hex'),ev=document.getElementById('events');let vals=[],logs=[];
+const ctl={9:'<TAB>',10:'<LF>',13:'<CR>',28:'<FS>',29:'<GS>',30:'<RS>',31:'<US>'};
+function label(n){return ctl[n]||((n>=32)?String.fromCodePoint(n):'<0x'+n.toString(16).toUpperCase().padStart(2,'0')+'>')}
+function draw(){a.textContent=vals.length?vals.map(label).join(''):'-';r.textContent=vals.length?vals.map(n=>n===29?'<FNC1>':label(n)).join(''):'-';h.textContent=vals.length?vals.map(n=>n.toString(16).toUpperCase().padStart(2,'0')).join(' '):'-';ev.textContent=logs.length?logs.join('\n'):'-';}
+window.addEventListener('keydown',e=>{logs.push('keydown | key='+JSON.stringify(e.key)+' | code='+e.code+' | keyCode='+e.keyCode+' | which='+e.which);logs=logs.slice(-50);if(e.key&&e.key.length===1){vals.push(e.key.codePointAt(0));e.preventDefault()}else if(e.key==='Enter'){e.preventDefault()}draw()},true);
+document.getElementById('clear').onclick=()=>{vals=[];logs=[];scan.value='';draw();scan.focus()};document.body.onclick=()=>scan.focus();draw();scan.focus();
+</script></body></html>
