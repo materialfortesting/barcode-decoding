@@ -2,14 +2,12 @@
 <html lang="fi">
 
 <head>
-
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>ProGlove Raw Input Tester</title>
 
 <style>
-
 body {
     margin:0;
     background:#020617;
@@ -94,11 +92,9 @@ button {
     margin-top:18px;
     line-height:1.5;
 }
-
 </style>
 
 </head>
-
 
 <body>
 
@@ -110,7 +106,6 @@ button {
 Napauta SCAN INPUT -kenttää ja lue viivakoodi ProGlovella.
 </p>
 
-
 <input
     id="scan"
     class="scan"
@@ -118,86 +113,59 @@ Napauta SCAN INPUT -kenttää ja lue viivakoodi ProGlovella.
     autocomplete="off"
 >
 
-
 <div class="box">
-
     <div class="t">Raw input:</div>
-
     <div id="raw">-</div>
-
 </div>
 
-
 <div class="box">
-
     <div class="t">Readable:</div>
-
     <div id="readable">-</div>
-
 </div>
 
-
 <div class="box">
-
     <div class="t">HEX:</div>
-
     <div id="hex">-</div>
-
 </div>
-
 
 <div class="box">
-
     <div class="t">Character codes:</div>
-
     <div id="codes" class="events">-</div>
-
 </div>
-
 
 <!-- GS ANALYSIS -->
 
 <div class="box">
-
     <div class="t amber">
         GS / FNC1 Analysis:
     </div>
 
     <div id="gs" class="gs-output">-</div>
-
 </div>
-
 
 <!-- CONTROL CHARACTERS -->
 
 <div class="box">
-
     <div class="t amber">
         Control characters:
     </div>
 
     <div id="controls" class="events">-</div>
-
 </div>
-
 
 <!-- KEYBOARD EVENTS -->
 
 <div class="box">
-
     <div class="t amber">
         Keyboard events:
     </div>
 
     <div id="events" class="events">-</div>
-
 </div>
-
 
 <button id="clear">
 CLEAR
 </button>
-
 
 <div class="note">
 
@@ -210,12 +178,10 @@ se näytetään muodossa &lt;GS 0x1D&gt;.
 
 </div>
 
-
 </div>
 
 
 <script>
-
 
 /*
  * ELEMENTS
@@ -245,9 +211,7 @@ const controls =
 const events =
     document.getElementById("events");
 
-
 let logs = [];
-
 
 
 /*
@@ -277,25 +241,17 @@ function visibleChar(code) {
     if (code === 9)
         return "<TAB 0x09>";
 
-
     if (code < 32) {
-
         return "<CTRL 0x" +
-
             code
             .toString(16)
             .toUpperCase()
             .padStart(2,"0")
-
             + ">";
-
     }
 
-
     return String.fromCodePoint(code);
-
 }
-
 
 
 /*
@@ -304,14 +260,11 @@ function visibleChar(code) {
 
 function analyze() {
 
-
     const value =
         scan.value;
 
-
     const arr =
         Array.from(value);
-
 
 
     /*
@@ -324,7 +277,6 @@ function analyze() {
         : "-";
 
 
-
     /*
      * READABLE
      */
@@ -334,15 +286,12 @@ function analyze() {
         value.length
 
         ? arr.map(c =>
-
             visibleChar(
                 c.codePointAt(0)
             )
-
           ).join("")
 
         : "-";
-
 
 
     /*
@@ -354,23 +303,20 @@ function analyze() {
         value.length
 
         ? arr.map(c =>
-
             c.codePointAt(0)
-
             .toString(16)
-
             .toUpperCase()
-
             .padStart(2,"0")
-
           ).join(" ")
 
         : "-";
 
 
-
     /*
      * CHARACTER CODES
+     *
+     * CORRECTED:
+     * return value must start on the same line
      */
 
     codes.textContent =
@@ -379,35 +325,23 @@ function analyze() {
 
         ? arr.map((c,index) => {
 
-
             const n =
                 c.codePointAt(0);
 
-
-            return
-
-                "#" + (index + 1) +
-
+            return "#" + (index + 1) +
                 " | " +
-
                 visibleChar(n) +
-
                 " | DEC " +
-
                 n +
-
                 " | HEX 0x" +
-
                 n
                 .toString(16)
                 .toUpperCase()
                 .padStart(2,"0");
 
-
           }).join("\n")
 
         : "-";
-
 
 
     /*
@@ -416,16 +350,12 @@ function analyze() {
 
     const controlCharacters = [];
 
-
     arr.forEach((c,index) => {
-
 
         const n =
             c.codePointAt(0);
 
-
         if (n < 32) {
-
 
             controlCharacters.push(
 
@@ -450,11 +380,8 @@ function analyze() {
                 .padStart(2,"0")
 
             );
-
         }
-
     });
-
 
 
     controls.textContent =
@@ -466,77 +393,59 @@ function analyze() {
         : "No control characters detected.";
 
 
-
-
     /*
      * GS / FNC1 ANALYSIS
      */
 
     const gsPositions = [];
 
-
     arr.forEach((c,index) => {
-
 
         if (
             c.codePointAt(0) === 29
         ) {
-
             gsPositions.push(index);
-
         }
-
     });
-
 
 
     if (
         gsPositions.length > 0
     ) {
 
-
         const gsAtStart =
 
             arr.length > 0 &&
-
             arr[0]
             .codePointAt(0) === 29;
-
 
 
         const gsAtEnd =
 
             arr.length > 0 &&
-
             arr[arr.length - 1]
             .codePointAt(0) === 29;
 
 
-
         let result = "";
-
 
         result +=
             "GS FOUND: YES\n";
-
 
         result +=
             "GS AT START: " +
             (gsAtStart ? "YES" : "NO") +
             "\n";
 
-
         result +=
             "GS AT END: " +
             (gsAtEnd ? "YES" : "NO") +
             "\n";
 
-
         result +=
             "GS COUNT: " +
             gsPositions.length +
             "\n";
-
 
 
         /*
@@ -546,10 +455,8 @@ function analyze() {
         result +=
             "\nGS POSITIONS:\n";
 
-
         gsPositions.forEach(
             (position,index) => {
-
 
                 result +=
 
@@ -563,10 +470,8 @@ function analyze() {
                     (position + 1) +
 
                     "\n";
-
             }
         );
-
 
 
         /*
@@ -576,10 +481,8 @@ function analyze() {
         result +=
             "\nGS SEPARATORS:\n";
 
-
         gsPositions.forEach(
             (position,index) => {
-
 
                 const before =
 
@@ -596,39 +499,29 @@ function analyze() {
 
 
                 result +=
-
                     "\nGS #" +
                     (index + 1) +
-
                     "\n";
 
 
                 result +=
-
                     "Before: " +
-
                     (
                         before ||
                         "<START OF DATA>"
                     ) +
-
                     "\n";
 
 
                 result +=
-
                     "After: " +
-
                     (
                         after ||
                         "<END OF DATA>"
                     ) +
-
                     "\n";
-
             }
         );
-
 
 
         /*
@@ -638,17 +531,13 @@ function analyze() {
         result +=
             "\nFULL DATA:\n";
 
-
         result +=
 
             arr.map(c =>
-
                 visibleChar(
                     c.codePointAt(0)
                 )
-
             ).join("");
-
 
 
         /*
@@ -658,40 +547,29 @@ function analyze() {
         result +=
             "\n\nFULL HEX:\n";
 
-
         result +=
 
             arr.map(c =>
-
                 c.codePointAt(0)
-
                 .toString(16)
-
                 .toUpperCase()
-
                 .padStart(2,"0")
-
             ).join(" ");
-
 
 
         gs.textContent =
             result;
 
-
         gs.classList.remove(
             "gs-not-found"
         );
-
 
         gs.classList.add(
             "gs-found"
         );
 
 
-
     } else {
-
 
         gs.textContent =
 
@@ -710,15 +588,11 @@ function analyze() {
             "gs-found"
         );
 
-
         gs.classList.add(
             "gs-not-found"
         );
-
     }
-
 }
-
 
 
 /*
@@ -729,7 +603,6 @@ scan.addEventListener(
     "input",
     function(e) {
 
-
         logs.push(
 
             "INPUT | value=" +
@@ -739,25 +612,19 @@ scan.addEventListener(
             ) +
 
             " | inputType=" +
-
             e.inputType
 
         );
 
-
         logs =
             logs.slice(-100);
-
 
         events.textContent =
             logs.join("\n");
 
-
         analyze();
-
     }
 );
-
 
 
 /*
@@ -768,7 +635,6 @@ scan.addEventListener(
     "keydown",
     function(e) {
 
-
         logs.push(
 
             "KEYDOWN | key=" +
@@ -778,30 +644,23 @@ scan.addEventListener(
             ) +
 
             " | code=" +
-
             e.code +
 
             " | keyCode=" +
-
             e.keyCode +
 
             " | which=" +
-
             e.which
 
         );
 
-
         logs =
             logs.slice(-100);
 
-
         events.textContent =
             logs.join("\n");
-
     }
 );
-
 
 
 /*
@@ -812,7 +671,6 @@ scan.addEventListener(
     "keyup",
     function(e) {
 
-
         logs.push(
 
             "KEYUP | key=" +
@@ -822,26 +680,20 @@ scan.addEventListener(
             ) +
 
             " | code=" +
-
             e.code +
 
             " | keyCode=" +
-
             e.keyCode
 
         );
 
-
         logs =
             logs.slice(-100);
 
-
         events.textContent =
             logs.join("\n");
-
     }
 );
-
 
 
 /*
@@ -852,12 +704,9 @@ document
 .getElementById("clear")
 .onclick = function() {
 
-
     scan.value = "";
 
-
     logs = [];
-
 
     raw.textContent =
         "-";
@@ -886,11 +735,8 @@ document
         "gs-not-found"
     );
 
-
     scan.focus();
-
 };
-
 
 
 /*
@@ -899,9 +745,7 @@ document
 
 scan.focus();
 
-
 </script>
 
 </body>
-
 </html>
