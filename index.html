@@ -72,3 +72,836 @@ input,.box,button {
 
 .gs-found {
     color:#4ade80;
+}
+
+.gs-not-found {
+    color:#f87171;
+}
+
+button {
+    margin-top:16px;
+    width:auto;
+    padding:12px 22px;
+    border:0;
+    background:#dc2626;
+    color:white;
+    font-weight:bold;
+}
+
+.note {
+    color:#94a3b8;
+    font-size:12px;
+    margin-top:18px;
+    line-height:1.5;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="w">
+
+<h1>ProGlove Raw Input Tester</h1>
+
+<p>
+Napauta SCAN INPUT -kenttää ja lue viivakoodi ProGlovella.
+</p>
+
+
+<input
+    id="scan"
+    class="scan"
+    placeholder="SCAN INPUT - napauta tähän"
+    autocomplete="off"
+>
+
+
+<div class="box">
+
+    <div class="t">Raw input:</div>
+
+    <div id="raw">-</div>
+
+</div>
+
+
+<div class="box">
+
+    <div class="t">Readable:</div>
+
+    <div id="readable">-</div>
+
+</div>
+
+
+<div class="box">
+
+    <div class="t">HEX:</div>
+
+    <div id="hex">-</div>
+
+</div>
+
+
+<div class="box">
+
+    <div class="t">Character codes:</div>
+
+    <div id="codes" class="events">-</div>
+
+</div>
+
+
+<!-- GS ANALYSIS -->
+
+<div class="box">
+
+    <div class="t amber">
+        GS / FNC1 Analysis:
+    </div>
+
+    <div id="gs" class="gs-output">-</div>
+
+</div>
+
+
+<!-- CONTROL CHARACTERS -->
+
+<div class="box">
+
+    <div class="t amber">
+        Control characters:
+    </div>
+
+    <div id="controls" class="events">-</div>
+
+</div>
+
+
+<!-- KEYBOARD EVENTS -->
+
+<div class="box">
+
+    <div class="t amber">
+        Keyboard events:
+    </div>
+
+    <div id="events" class="events">-</div>
+
+</div>
+
+
+<button id="clear">
+CLEAR
+</button>
+
+
+<div class="note">
+
+GS = Group Separator<br>
+ASCII decimal = 29<br>
+HEX = 0x1D<br><br>
+
+Jos selain vastaanottaa merkin 0x1D,
+se näytetään muodossa &lt;GS 0x1D&gt;.
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+/*
+ * ELEMENTS
+ */
+
+const scan =
+    document.getElementById("scan");
+
+const raw =
+    document.getElementById("raw");
+
+const readable =
+    document.getElementById("readable");
+
+const hex =
+    document.getElementById("hex");
+
+const codes =
+    document.getElementById("codes");
+
+const gs =
+    document.getElementById("gs");
+
+const controls =
+    document.getElementById("controls");
+
+const events =
+    document.getElementById("events");
+
+
+let logs = [];
+
+
+
+/*
+ * CONTROL CHARACTER NAME
+ */
+
+function visibleChar(code) {
+
+    if (code === 29)
+        return "<GS 0x1D>";
+
+    if (code === 28)
+        return "<FS 0x1C>";
+
+    if (code === 30)
+        return "<RS 0x1E>";
+
+    if (code === 31)
+        return "<US 0x1F>";
+
+    if (code === 13)
+        return "<CR 0x0D>";
+
+    if (code === 10)
+        return "<LF 0x0A>";
+
+    if (code === 9)
+        return "<TAB 0x09>";
+
+
+    if (code < 32) {
+
+        return "<CTRL 0x" +
+
+            code
+            .toString(16)
+            .toUpperCase()
+            .padStart(2,"0")
+
+            + ">";
+
+    }
+
+
+    return String.fromCodePoint(code);
+
+}
+
+
+
+/*
+ * MAIN ANALYZER
+ */
+
+function analyze() {
+
+
+    const value =
+        scan.value;
+
+
+    const arr =
+        Array.from(value);
+
+
+
+    /*
+     * RAW INPUT
+     */
+
+    raw.textContent =
+        value.length
+        ? value
+        : "-";
+
+
+
+    /*
+     * READABLE
+     */
+
+    readable.textContent =
+
+        value.length
+
+        ? arr.map(c =>
+
+            visibleChar(
+                c.codePointAt(0)
+            )
+
+          ).join("")
+
+        : "-";
+
+
+
+    /*
+     * HEX
+     */
+
+    hex.textContent =
+
+        value.length
+
+        ? arr.map(c =>
+
+            c.codePointAt(0)
+
+            .toString(16)
+
+            .toUpperCase()
+
+            .padStart(2,"0")
+
+          ).join(" ")
+
+        : "-";
+
+
+
+    /*
+     * CHARACTER CODES
+     */
+
+    codes.textContent =
+
+        value.length
+
+        ? arr.map((c,index) => {
+
+
+            const n =
+                c.codePointAt(0);
+
+
+            return
+
+                "#" + (index + 1) +
+
+                " | " +
+
+                visibleChar(n) +
+
+                " | DEC " +
+
+                n +
+
+                " | HEX 0x" +
+
+                n
+                .toString(16)
+                .toUpperCase()
+                .padStart(2,"0");
+
+
+          }).join("\n")
+
+        : "-";
+
+
+
+    /*
+     * CONTROL CHARACTERS
+     */
+
+    const controlCharacters = [];
+
+
+    arr.forEach((c,index) => {
+
+
+        const n =
+            c.codePointAt(0);
+
+
+        if (n < 32) {
+
+
+            controlCharacters.push(
+
+                "Character " +
+                (index + 1) +
+
+                " / index " +
+                index +
+
+                ": " +
+
+                visibleChar(n) +
+
+                " | DEC " +
+                n +
+
+                " | HEX 0x" +
+
+                n
+                .toString(16)
+                .toUpperCase()
+                .padStart(2,"0")
+
+            );
+
+        }
+
+    });
+
+
+
+    controls.textContent =
+
+        controlCharacters.length
+
+        ? controlCharacters.join("\n")
+
+        : "No control characters detected.";
+
+
+
+
+    /*
+     * GS / FNC1 ANALYSIS
+     */
+
+    const gsPositions = [];
+
+
+    arr.forEach((c,index) => {
+
+
+        if (
+            c.codePointAt(0) === 29
+        ) {
+
+            gsPositions.push(index);
+
+        }
+
+    });
+
+
+
+    if (
+        gsPositions.length > 0
+    ) {
+
+
+        const gsAtStart =
+
+            arr.length > 0 &&
+
+            arr[0]
+            .codePointAt(0) === 29;
+
+
+
+        const gsAtEnd =
+
+            arr.length > 0 &&
+
+            arr[arr.length - 1]
+            .codePointAt(0) === 29;
+
+
+
+        let result = "";
+
+
+        result +=
+            "GS FOUND: YES\n";
+
+
+        result +=
+            "GS AT START: " +
+            (gsAtStart ? "YES" : "NO") +
+            "\n";
+
+
+        result +=
+            "GS AT END: " +
+            (gsAtEnd ? "YES" : "NO") +
+            "\n";
+
+
+        result +=
+            "GS COUNT: " +
+            gsPositions.length +
+            "\n";
+
+
+
+        /*
+         * POSITIONS
+         */
+
+        result +=
+            "\nGS POSITIONS:\n";
+
+
+        gsPositions.forEach(
+            (position,index) => {
+
+
+                result +=
+
+                    "#" +
+                    (index + 1) +
+
+                    ": index " +
+                    position +
+
+                    " / character " +
+                    (position + 1) +
+
+                    "\n";
+
+            }
+        );
+
+
+
+        /*
+         * EACH GS SEPARATOR
+         */
+
+        result +=
+            "\nGS SEPARATORS:\n";
+
+
+        gsPositions.forEach(
+            (position,index) => {
+
+
+                const before =
+
+                    arr
+                    .slice(0,position)
+                    .join("");
+
+
+                const after =
+
+                    arr
+                    .slice(position + 1)
+                    .join("");
+
+
+                result +=
+
+                    "\nGS #" +
+                    (index + 1) +
+
+                    "\n";
+
+
+                result +=
+
+                    "Before: " +
+
+                    (
+                        before ||
+                        "<START OF DATA>"
+                    ) +
+
+                    "\n";
+
+
+                result +=
+
+                    "After: " +
+
+                    (
+                        after ||
+                        "<END OF DATA>"
+                    ) +
+
+                    "\n";
+
+            }
+        );
+
+
+
+        /*
+         * FULL READABLE DATA
+         */
+
+        result +=
+            "\nFULL DATA:\n";
+
+
+        result +=
+
+            arr.map(c =>
+
+                visibleChar(
+                    c.codePointAt(0)
+                )
+
+            ).join("");
+
+
+
+        /*
+         * HEX WITH GS
+         */
+
+        result +=
+            "\n\nFULL HEX:\n";
+
+
+        result +=
+
+            arr.map(c =>
+
+                c.codePointAt(0)
+
+                .toString(16)
+
+                .toUpperCase()
+
+                .padStart(2,"0")
+
+            ).join(" ");
+
+
+
+        gs.textContent =
+            result;
+
+
+        gs.classList.remove(
+            "gs-not-found"
+        );
+
+
+        gs.classList.add(
+            "gs-found"
+        );
+
+
+
+    } else {
+
+
+        gs.textContent =
+
+            "GS FOUND: NO\n" +
+
+            "GS AT START: NO\n" +
+
+            "GS AT END: NO\n" +
+
+            "GS COUNT: 0\n\n" +
+
+            "No ASCII 29 / HEX 0x1D character detected.";
+
+
+        gs.classList.remove(
+            "gs-found"
+        );
+
+
+        gs.classList.add(
+            "gs-not-found"
+        );
+
+    }
+
+}
+
+
+
+/*
+ * INPUT EVENT
+ */
+
+scan.addEventListener(
+    "input",
+    function(e) {
+
+
+        logs.push(
+
+            "INPUT | value=" +
+
+            JSON.stringify(
+                scan.value
+            ) +
+
+            " | inputType=" +
+
+            e.inputType
+
+        );
+
+
+        logs =
+            logs.slice(-100);
+
+
+        events.textContent =
+            logs.join("\n");
+
+
+        analyze();
+
+    }
+);
+
+
+
+/*
+ * KEYDOWN
+ */
+
+scan.addEventListener(
+    "keydown",
+    function(e) {
+
+
+        logs.push(
+
+            "KEYDOWN | key=" +
+
+            JSON.stringify(
+                e.key
+            ) +
+
+            " | code=" +
+
+            e.code +
+
+            " | keyCode=" +
+
+            e.keyCode +
+
+            " | which=" +
+
+            e.which
+
+        );
+
+
+        logs =
+            logs.slice(-100);
+
+
+        events.textContent =
+            logs.join("\n");
+
+    }
+);
+
+
+
+/*
+ * KEYUP
+ */
+
+scan.addEventListener(
+    "keyup",
+    function(e) {
+
+
+        logs.push(
+
+            "KEYUP | key=" +
+
+            JSON.stringify(
+                e.key
+            ) +
+
+            " | code=" +
+
+            e.code +
+
+            " | keyCode=" +
+
+            e.keyCode
+
+        );
+
+
+        logs =
+            logs.slice(-100);
+
+
+        events.textContent =
+            logs.join("\n");
+
+    }
+);
+
+
+
+/*
+ * CLEAR BUTTON
+ */
+
+document
+.getElementById("clear")
+.onclick = function() {
+
+
+    scan.value = "";
+
+
+    logs = [];
+
+
+    raw.textContent =
+        "-";
+
+    readable.textContent =
+        "-";
+
+    hex.textContent =
+        "-";
+
+    codes.textContent =
+        "-";
+
+    gs.textContent =
+        "-";
+
+    controls.textContent =
+        "-";
+
+    events.textContent =
+        "-";
+
+
+    gs.classList.remove(
+        "gs-found",
+        "gs-not-found"
+    );
+
+
+    scan.focus();
+
+};
+
+
+
+/*
+ * AUTO FOCUS
+ */
+
+scan.focus();
+
+
+</script>
+
+</body>
+
+</html>
